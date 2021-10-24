@@ -1,157 +1,53 @@
-# Практикум: Безопасный и быстрый деплой в Kubernetes®
+# Авторизация в облачной консоли и настройка `yc` CLI
 
-На этом практикуме пошагово развернём приложение с облачной инфраструктурой и распределим входящий трафик между его
-разными компонентами. Обсудим важные вопросы хранения секретов и безопасности.
+## Настройка yc
 
-## Начало работы
+Получим и сохраним в env переменную токен для работы с Yandex Cloud.
 
-[Настройте окружение](#настройка-окружения).
-
-Склонируйте репозиторий, выполнив в окне терминала:
+Кликнем на блок кода, ниже, чтобы его скопировать. Вставим в терминал, но не будем нажимать `enter`:
 ```bash
-git clone https://github.com/skipor/yandex-scale-2021-kubernetes-workshop.git
-cd ./yandex-scale-2021-kubernetes-workshop
+# После символа '=' нужно будет вставить полученный токен
+OAUTH_TOKEN=
 ```
 
-Дальнейшая работа разбита на этапы. Перед каждым этапом вам будут показаны слайды и демонстрация прохождения этапа с
-пояснениями. После этого, вам будет предложено пройти этап самостоятельно. Для этого, для каждого этапа есть директория
-в [./steps](./steps). В ней в файле `README.md` содержится подробная инструкция с пояснениями и блоками команд. Блоки
-команд нужно копировать кликая на них, а затем вставлять в окно терминала.
+Несколько приёмов использования командной строки которые будут встречаться далее:
+* Получение значения переменной с добавлением `:?` к имени, вроде `${VAR_NAME:?}`, требует чтобы переменная была
+  выставлена ранее
+* Вызов `yc` CLI с флагом `--format json` выводит объект в формате JSON
+* `| jq .id -r` возвращает JSON значение поля `id`
 
-Теперь можете [перейти к первому этапу](./steps/1_init_cli/README.md), и ждать окончания его демонстрации или начать его
-самостоятельное выполнение.
-
-Для работы вам потребуются:
-```
-yc (Yandex Cloud CLI)
-terraform >= 1.0.8
-kubectl >= 1.20
-docker
-jq
-curl
-git
-tree
-```
-
-Ниже описаны шаги для их установки на различных операционных системах.
-
-### Виртуальная машина
-
-Можно не устанавливать все зависимости на свой компьютер, а работать из преднастроенной виртуальной машины. В таком
-случае установите [yc CLI](https://cloud.yandex.ru/docs/cli/operations/install-cli#interactive). Если у вас ещё нет пары
-ssh ключей, то [создайте её](https://cloud.yandex.ru/docs/compute/operations/vm-connect/ssh#creating-ssh-keys).
-
-На первом этапе, будет показано как создать виртуальную машину и зайти на неё по SSH.
-
-### Windows
-- [Установите WSL](https://docs.microsoft.com/en-us/windows/wsl/install)
-- Запустите Ubuntu Linux
-- Настройте согласно инструкции для Ubuntu Linux
-
-### Ubuntu Linux
-
-В случае Linux отличного от Ubuntu, установите те же пакеты, используя пакетный менеджер вашего дистрибутива.
-
-#### yc CLI
-
-Установите [yc CLI](https://cloud.yandex.ru/docs/cli/operations/install-cli#interactive)
+Работать с настройками `yc` CLI будем
+используя [команды не интерактивной настройки](https://cloud.yandex.ru/docs/cli/cli-ref/managed-yc/config/)
+- `yc config`. Создадим профиль `yc` CLI в котором будем работать и выставим туда токен
 ```bash
-curl https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
-exec -l $SHELL
-yc version
+yc config profile create workshop
+yc config set token ${OAUTH_TOKEN:?}
+echo "Token set to '$(yc config get token)'"
 ```
 
-#### docker
-
-[Установите `docker`](https://docs.docker.com/engine/install/ubuntu/):
+Проверим, что токен скопирован корректно, и появился доступ к Облаку в котором будем работать:
 ```bash
-sudo apt-get update
-sudo apt-get install apt-transport-https ca-certificates curl gnupg lsb-release -y
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt-get update
-sudo apt-get install docker-ce docker-ce-cli containerd.io -y
-sudo docker run hello-world
+yc resource cloud list
 ```
 
-[Настройте запуск docker без sudo](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)
+Выставим ID Облака в конфиг `yc` CLI
 ```bash
-sudo groupadd docker
-sudo usermod -aG docker $USER
-newgrp docker
-docker run hello-world
+CLOUD_NAME=cloud-practicum-k8s
+CLOUD_ID=$(yc resource cloud get --name ${CLOUD_NAME:?} --format json | jq .id -r)
+yc config set cloud-id ${CLOUD_ID:?}
+echo "В конфиг yc CLI добавлен ID Облака: '$(yc config get cloud-id)'"
 ```
 
-Предзагрузите образ `aws-cli`:
+Создаем каталог
 ```bash
-docker pull amazon/aws-cli
+echo "Ваш каталог:"
+FOLDER=$(yc resource folder list --format json | jq '.[]' -c | grep <твоя папка>)
+jq <<< "$FOLDER" '"Имя: " + .name + " " + "ID: " + .id' -r
 ```
 
-#### Прочее
-
-[Установите `terraform`](https://learn.hashicorp.com/tutorials/terraform/install-cli) версии не ниже `1.0.8`:
+Сохраним его ID в конфиг yc CLI:
 ```bash
-sudo apt-get update && sudo apt-get install -y gnupg software-properties-common curl
-curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-sudo apt-get update && sudo apt-get install terraform -y
-terraform version
+yc config set folder-id $(jq -r <<< "$FOLDER" .id)
+echo "В конфиг yc CLI добавлен ID каталога: '$(yc config get folder-id)'"
 ```
-
-[Установите `kubectl` версии не ниже `1.20`](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-binary-with-curl-on-linux):
-```bash
-curl -LO https://dl.k8s.io/release/v1.22.0/bin/linux/amd64/kubectl
-sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-kubectl version
-```
-
-Установите прочие пакеты:
-```bash
-sudo apt-get install jq curl git tree -y
-```
-
-### macOS
-
-Установите [yc CLI](https://cloud.yandex.ru/docs/cli/operations/install-cli#interactive)
-```bash
-curl https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
-exec -l $SHELL
-yc version
-```
-
-[Установите docker](https://docs.docker.com/desktop/mac/install/)
-Предзагрузите образ aws-cli:
-```bash
-docker pull amazon/aws-cli
-```
-
-[Установите `brew`](https://brew.sh):
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-
-```bash
-# terraform
-brew tap hashicorp/tap
-brew install hashicorp/tap/terraform
-terraform version
-
-
-# kubectl
-brew install kubectl 
-kubectl version
-
-# Прочее
-brew install jq curl git tree
-```
-
-
-
-
-
-
-
-
-
-
+И все с виду.
