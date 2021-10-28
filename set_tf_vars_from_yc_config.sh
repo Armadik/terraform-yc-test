@@ -7,7 +7,7 @@ else
   export TF_VAR_yc_token
 fi
 
-TF_VAR_folder_id=$(c)
+TF_VAR_folder_id=$(yc config get folder-id)
 if [[ "$TF_VAR_folder_id" == "" ]]; then
   echo "WARN: There is no 'folder_id' in 'yc config'"
 else

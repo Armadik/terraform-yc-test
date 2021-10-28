@@ -50,4 +50,8 @@ jq <<< "$FOLDER" '"Имя: " + .name + " " + "ID: " + .id' -r
 yc config set folder-id $(jq -r <<< "$FOLDER" .id)
 echo "В конфиг yc CLI добавлен ID каталога: '$(yc config get folder-id)'"
 ```
+
+```bash
+source ./set_tf_vars_from_yc_config.sh
+```
 И все с виду.
