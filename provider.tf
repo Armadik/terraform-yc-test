@@ -3,7 +3,6 @@ terraform {
     yandex = {
       source = "yandex-cloud/yandex"
     }
-    null   = {}
   }
 }
 

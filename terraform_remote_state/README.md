@@ -1,3 +1,5 @@
+# Если нужно подключение к бакету в ycloud!!!
+
 # Переносим Terraform state в удалённое хранилище
 
 Есть [множество вариантов удалённого хранилища](https://www.terraform.io/docs/language/settings/index.html) для
@@ -107,6 +109,4 @@ echo "Замечание: предупреждение 'Note: Objects have chang
 Готово!
 Теперь любой член команды, которому выдадут нужные IAM права, может начать работу с Terraform выполнив
 единожды `./init.sh`.
-
-### [cледующий этап >>>](../4_build_and_push_container_images/README.md)
 
