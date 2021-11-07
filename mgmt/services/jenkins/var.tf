@@ -8,9 +8,20 @@ variable "yc_token" {
   type        = string
 }
 
+variable "vpc_subnet" {
+  description = "наследуем из корня"
+  type        = string
+}
+
+
 variable "user" {
   type = string
   default = "jenkins"
+}
+
+variable "password" {
+  type = string
+  default = "12345"
 }
 
 variable "public_key_path" {
