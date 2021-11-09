@@ -13,10 +13,9 @@ variable "vpc_subnet" {
   type        = string
 }
 
-
 variable "user" {
   type = string
-  default = "jenkins"
+  default = "yc-user"
 }
 
 variable "password" {

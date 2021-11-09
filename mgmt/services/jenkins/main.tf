@@ -19,10 +19,11 @@ resource "yandex_compute_instance" "vm-1" {
     }
   }
   network_interface {
-    subnet_id = var.vpc_subnet
+    subnet_id =  var.vpc_subnet
     nat       = true
   }
   resources {
+    core_fraction = 20
     cores  = 2
     memory = 4
   }
@@ -34,7 +35,18 @@ resource "yandex_compute_instance" "vm-1" {
   provisioner "remote-exec" {
     inline = [
       "echo '${var.user}:${var.password}' | sudo chpasswd",
-      "sudo apt-get update"
+      "sudo apt-get update",
+      "sudo apt update",
+      "wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -",
+      "sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'",
+      "sudo apt update",
+      "sudo apt install default-jre -y",
+      "sudo apt install jenkins -y",
+      "sudo systemctl start jenkins",
+      "sleep 20",
+      "curl -kv 0.0.0.0:8080",
+      "echo ### PASSWORD!!!!! ####",
+      "sudo cat /var/lib/jenkins/secrets/initialAdminPassword"
     ]
     connection {
       type = "ssh"
@@ -43,6 +55,10 @@ resource "yandex_compute_instance" "vm-1" {
       host = self.network_interface[0].nat_ip_address
     }
   }
+
+  depends_on = [
+    var.vpc_subnet
+  ]
 
   timeouts {
     create = "10m"
