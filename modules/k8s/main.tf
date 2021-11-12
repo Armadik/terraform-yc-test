@@ -1,10 +1,5 @@
 /*
 
-# Кластер Kubernetes
-terraform import 'yandex_kubernetes_cluster.workshop' "$(yc k8s cluster get workshop --format json | jq .id -r)"
-
-# Группа узлов Kubernetes
-terraform import 'yandex_kubernetes_node_group.default' "$(yc k8s node-group get default --format json | jq .id -r)"
 */
 // Сервисный аккаунт Kubernetes кластера и его биндинг роли
 resource "yandex_iam_service_account" "k8s" {
@@ -47,22 +42,22 @@ resource "yandex_kms_symmetric_key" "k8s-cluster-key" {
 }
 
 // Кластер Kubernetes
-resource "yandex_kubernetes_cluster" "zonal_cluster_resource_name" {
+resource "yandex_kubernetes_cluster" "participant" {
   name        = "participant"
   description = "k8s - participant"
 
-  network_id = "${yandex_vpc_network.network_resource_name.id}"
+  network_id = yandex_vpc_network.k8s.id
 
   master {
     version = "1.17"
     zonal {
-      zone      = "${yandex_vpc_subnet.subnet_resource_name.zone}"
-      subnet_id = "${yandex_iam_service_account.k8snodes.id}"
+      zone      = yandex_vpc_subnet.subnet_k8s.zone
+      subnet_id = yandex_vpc_subnet.subnet_k8s.id
     }
 
     public_ip = true
 
-    security_group_ids = ["${yandex_vpc_security_group.security_group_name.id}"]
+    security_group_ids = [yandex_vpc_security_group.group1.id]
 
     maintenance_policy {
       auto_upgrade = true
@@ -74,8 +69,8 @@ resource "yandex_kubernetes_cluster" "zonal_cluster_resource_name" {
     }
   }
 
-  service_account_id      = "${yandex_iam_service_account.k8s.id}"
-  node_service_account_id = "${yandex_iam_service_account.k8snodes.id}"
+  service_account_id      = yandex_iam_service_account.k8s.id
+  node_service_account_id = yandex_iam_service_account.k8snodes.id
 
   labels = {
     my_key       = "my_test_k8s"
@@ -86,6 +81,66 @@ resource "yandex_kubernetes_cluster" "zonal_cluster_resource_name" {
   network_policy_provider = "CALICO"
 
   kms_provider {
-    key_id = "${yandex_kms_symmetric_key.k8s-cluster-key.id}"
+    key_id = yandex_kms_symmetric_key.k8s-cluster-key.id
+  }
+}
+
+// Группа узлов Kubernetes
+resource "yandex_kubernetes_node_group" "my_node_group" {
+  cluster_id  = yandex_kubernetes_cluster.participant.id
+  name        = "name"
+  description = "description"
+  version     = "1.17"
+
+  labels = {
+    "key" = "value"
+  }
+
+  instance_template {
+    platform_id = "standard-v2"
+
+
+    resources {
+      memory = 2
+      cores  = 2
+    }
+
+    boot_disk {
+      type = "network-hdd"
+      size = 64
+    }
+
+    scheduling_policy {
+      preemptible = false
+    }
+  }
+
+  scale_policy {
+    fixed_scale {
+      size = 1
+    }
+  }
+
+  allocation_policy {
+    location {
+      zone = "ru-central1-a"
+    }
+  }
+
+  maintenance_policy {
+    auto_upgrade = true
+    auto_repair  = true
+
+    maintenance_window {
+      day        = "monday"
+      start_time = "15:00"
+      duration   = "3h"
+    }
+
+    maintenance_window {
+      day        = "friday"
+      start_time = "10:00"
+      duration   = "4h30m"
+    }
   }
 }
