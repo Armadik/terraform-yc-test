@@ -11,7 +11,7 @@ yc resource folder --id ${FOLDER_ID:?} list-access-bindings
 yc kms symmetric-key list
 
 yc k8s cluster list
-yc k8s cluster --name workshop list-node-groups
-yc k8s cluster --name workshop list-nodes
+yc k8s cluster --name participant list-node-groups
+yc k8s cluster --name participant list-nodes
 )
 

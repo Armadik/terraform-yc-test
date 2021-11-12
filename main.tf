@@ -12,4 +12,9 @@ module "jenkins" {
   vpc_subnet = module.vpc.zone-a_subnet_id
 }
 
-
+module "k8s" {
+  source     = "./modules/k8s"
+  folder_id  = local.folder_id
+  yc_token   = local.yc_token
+  vpc_subnet = module.vpc.zone-a_subnet_id
+}
