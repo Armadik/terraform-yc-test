@@ -1,5 +1,5 @@
 resource "yandex_vpc_network" "k8s" {
-  name = "default"
+  name = "k8s"
 }
 
 resource "yandex_vpc_subnet" "subnet_k8s" {
