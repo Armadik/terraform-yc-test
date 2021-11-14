@@ -1,3 +1,13 @@
+terraform {
+  required_providers {
+    yandex = {
+      source  = "yandex-cloud/yandex"
+      version = ">= 0.66.0"
+    }
+  }
+}
+
+
 // Оставляем одну подсеть для тестов в зоне - "a"
 resource "yandex_vpc_network" "default" {
   name = "default"

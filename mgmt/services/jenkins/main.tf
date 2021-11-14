@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    yandex = {
+      source  = "yandex-cloud/yandex"
+      version = ">= 0.66.0"
+    }
+  }
+}
+
 data "yandex_compute_image" "ubuntu-20-04" {
 family = "ubuntu-2004-lts"
 }

@@ -1,14 +1,42 @@
+
+variable "description" {
+  description = "(optional)"
+  type        = string
+  default     = null
+}
+
 variable "folder_id" {
-  description = "наследуем из корня"
+  description = "(optional)"
+  type        = string
+  default     = null
+}
+
+variable "labels" {
+  description = "(optional)"
+  type        = map(string)
+  default     = null
+}
+
+variable "name" {
+  description = "(optional)"
+  type        = string
+  default     = null
+}
+
+variable "network_id" {
+  description = "(required)"
   type        = string
 }
 
-variable "yc_token" {
-  description = "наследуем из корня"
+
+variable "node_service_account_id" {
+  description = "(required)"
   type        = string
 }
 
-variable "vpc_subnet" {
-  description = "наследуем из корня"
+variable "service_account_id" {
+  description = "(required)"
   type        = string
 }
+
+
