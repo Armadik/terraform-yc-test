@@ -1,19 +1,6 @@
-
-variable "description" {
-  description = "(optional)"
-  type        = string
-  default     = null
-}
-
 variable "folder_id" {
   description = "(optional)"
   type        = string
-  default     = null
-}
-
-variable "labels" {
-  description = "(optional)"
-  type        = map(string)
   default     = null
 }
 
@@ -23,20 +10,30 @@ variable "name" {
   default     = null
 }
 
-variable "network_id" {
-  description = "(required)"
-  type        = string
+variable subnet_id {
+  description = "Subnet"
 }
 
+variable zone {
+  description = "Zone"
+  # Значение по умолчанию
+  default = "ru-central1-b"
+}
+
+variable "network_id" {
+  description = "Network"
+}
 
 variable "node_service_account_id" {
   description = "(required)"
-  type        = string
 }
 
 variable "service_account_id" {
   description = "(required)"
-  type        = string
+}
+
+variable "kms-key" {
+  description = "(required)"
 }
 
 

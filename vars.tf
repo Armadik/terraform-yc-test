@@ -26,3 +26,8 @@ locals {
   yc_token  = var.yc_token
 }
 
+variable "zone" {
+  description = "Zone"
+  # Значение по умолчанию
+  default = "ru-central1-a"
+}

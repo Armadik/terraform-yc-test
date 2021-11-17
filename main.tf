@@ -4,6 +4,7 @@ module "vpc" {
   yc_token  = local.yc_token
 }
 
+
 /*
 // VM - jenkins
 module "jenkins" {
@@ -22,18 +23,10 @@ module "iam" {
 
 module "kubernetes_cluster" {
   source = "./modules/k8s"
-
-  description = "K8s - test"
-  # folder_id - (optional) is a type of string
-  folder_id = var.folder_id
-  # labels - (optional) is a type of map of string
-  labels = {}
-  # name - (optional) is a type of string
-  name = "K8S-bot-test"
-  # network_id - (required) is a type of string
-  network_id = module.vpc.yandex_vpc_network_id
-  # node_service_account_id - (required) is a type of string
-  node_service_account_id = module.iam.k8snodes-id
-  # service_account_id - (required) is a type of string
-  service_account_id = module.iam.k8s-id# service_ipv4_range - (optional) is a type of string
+  service_account_id          = module.iam.k8s-service-account-id
+  subnet_id                   = module.vpc.zone-a_subnet_id
+  zone                        = var.zone
+  network_id                  = module.vpc.vpc_network_default_id
+  kms-key                     = module.iam.k8s-cluster-key-id
+  node_service_account_id     = module.iam.k8s-nodes-service-account-id
 }

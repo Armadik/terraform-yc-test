@@ -10,24 +10,29 @@ terraform {
   }
 }
 
-# yandex_kubernetes_cluster
 
-resource "yandex_kubernetes_cluster" "zonal_k8s_cluster" {
-  name        = "my-cluster"
-  description = "my-cluster description"
-  network_id = yandex_vpc_network.k8s.id
+# yandex_kubernetes_cluster
+resource "yandex_kubernetes_cluster" "cluster" {
+  name        = "test-cluster"
+  network_id  = var.network_id
 
   master {
-    version = "1.18"
+    version = "1.19"
     zonal {
-      zone      = yandex_vpc_subnet.subnet_k8s.zone
-      subnet_id = yandex_vpc_subnet.subnet_k8s.id
+      zone      = var.zone
+      subnet_id = var.subnet_id
     }
+
     public_ip = true
+
+    maintenance_policy {
+      auto_upgrade = true
+
+    }
   }
 
   service_account_id      = var.service_account_id
-  node_service_account_id = var.node_service_account_id
-  release_channel = "STABLE"
-}
+  node_service_account_id = var.service_account_id
 
+  release_channel = "RAPID"
+}

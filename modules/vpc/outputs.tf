@@ -1,17 +1,13 @@
-output "yandex_vpc_network" {
+output "vpc_network_default" {
   value = yandex_vpc_network.default
 }
 
-output "yandex_vpc_network_id" {
+output "vpc_network_default_id" {
   value = yandex_vpc_network.default.id
 }
 
 output "zone-a_subnet_id" {
   value = local.zone-a_subnet_id
-}
-
-output "zone-a" {
-  value = local.zone-a
 }
 
 /*
