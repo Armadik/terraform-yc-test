@@ -8,6 +8,15 @@ output "k8s-nodes-service-account-id" {
   value       = yandex_iam_service_account.k8snodes.id
 }
 
+output "k8s-service-account-name" {
+  description = "returns a string"
+  value       = yandex_iam_service_account.k8s.name
+}
+
+output "k8s-nodes-service-account-name" {
+  description = "returns a string"
+  value       = yandex_iam_service_account.k8snodes.name
+}
 
 output "k8s-cluster-key-id" {
   description = "returns a string"

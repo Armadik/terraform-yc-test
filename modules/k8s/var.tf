@@ -32,6 +32,14 @@ variable "service_account_id" {
   description = "(required)"
 }
 
+variable "node_service_account_name" {
+  description = "(required)"
+}
+
+variable "service_account_name" {
+  description = "(required)"
+}
+
 variable "kms-key" {
   description = "(required)"
 }

@@ -29,4 +29,6 @@ module "kubernetes_cluster" {
   network_id                  = module.vpc.vpc_network_default_id
   kms-key                     = module.iam.k8s-cluster-key-id
   node_service_account_id     = module.iam.k8s-nodes-service-account-id
+  node_service_account_name   = module.iam.k8s-nodes-service-account-name
+  service_account_name        = module.iam.k8s-service-account-name
 }
